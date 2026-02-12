@@ -5,7 +5,6 @@ import { getPosts } from '@/actions/post.action'
 import { getDBUserID } from '@/actions/user.action'
 import PostCard from '@/components/ui/PostCard'
 
-
 export default async function Home() {
   const user = await currentUser();
   const posts = await getPosts();
@@ -23,8 +22,7 @@ export default async function Home() {
         </div>
       </div>
 
-      <div className="hidden lg:block lg:col-span-4 sticky top-20">
-      </div>
+      <div className="hidden lg:block lg:col-span-4 sticky top-20"></div>
     </div>
   );
 }
