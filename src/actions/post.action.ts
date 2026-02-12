@@ -26,88 +26,54 @@ export async function createPost(content: string, image?: string) {
     }
 }
 
+const fullPostInclude = { 
+    author: { 
+        select: { 
+            name: true, 
+            image: true, 
+            username: true, 
+        }, 
+    }, 
+    comments: { 
+        include: { 
+            author: { 
+                select: { 
+                    name: true, 
+                    image: true, 
+                    username: true, 
+                }, 
+            }, 
+        }, 
+        orderBy: { 
+            createdAt: "desc", 
+        }, 
+    }, 
+    likes: { 
+        select: { 
+            userId: true, 
+        }, 
+    }, 
+    _count: { 
+        select: { 
+            likes: true, 
+            comments: true, 
+        }, 
+    }, 
+} satisfies Prisma.PostInclude; 
+
 export type FullPost = Prisma.PostGetPayload<{ 
-    include: { 
-        author: { 
-            select: { 
-                name: true; 
-                image: true; 
-                username: true; 
-            }; 
-        }; 
-        comments: { 
-            include: { 
-                author: { 
-                    select: { 
-                        name: true; 
-                        image: true; 
-                        username: true; 
-                    }; 
-                }; 
-            }; 
-            orderBy: { 
-                createdAt: "desc"; 
-            }; 
-        }; 
-        likes: { 
-            select: { 
-                userId: true; 
-            }; 
-        }; 
-        _count: { 
-            select: { 
-                likes: true; 
-                comments: true; 
-            }; 
-        }; 
-    }; 
+    include: typeof fullPostInclude; 
 }>; 
 
 export async function getPosts(): Promise<FullPost[]> { 
     try { 
-        const posts = await prisma.post.findMany({ 
+        return await prisma.post.findMany({ 
             orderBy: { 
-                createdAt: "desc", 
+                createdAt: "desc" 
             }, 
-            include: { 
-                author: { 
-                    select: { 
-                        name: true, 
-                        image: true, 
-                        username: true, 
-                    }, 
-                }, 
-                comments: { 
-                    include: { 
-                        author: { 
-                            select: {
-                                name: true, 
-                                image: true, 
-                                username: true, 
-                            }, 
-                        }, 
-                    }, 
-                    orderBy: { 
-                        createdAt: "desc", 
-                    }, 
-                }, 
-                likes: { 
-                    select: { 
-                        userId: true, 
-                    }, 
-                },
-                _count: { 
-                    select: { 
-                        likes: true, 
-                        comments: true, 
-                    }, 
-                }, 
-            }, 
+            include: fullPostInclude, 
         }); 
-        
-        return posts; 
-    } 
-    catch (error) { 
+    } catch (error) { 
         throw new Error("Failed to get posts"); 
     } 
 }
