@@ -97,7 +97,7 @@ export async function toggleLike(postId:string) {
             select:{authorId: true}
         });
 
-        if(!post) throw new Error("Post nor found")
+        if(!post) throw new Error("Post not found")
 
         if(existingLike)
         {
@@ -142,49 +142,47 @@ export async function toggleLike(postId:string) {
     }
 }
 
-export async function createComment(postId:string, content:string) {
-    try{
-        const userId = await getDBUserID();
-        if(!userId) return
-        if(!content) throw new Error("Comment cannot be empty")
-
-        const post = await prisma.post.findUnique({
-            where:{id: postId},
-            select:{authorId: true}
-        });
-
-        if(!post) throw new Error("Post nor found")
-
-        const [comment] = await prisma.$transaction(async (tx) => {
-            const newComment = await tx.comment.create({
-                data:{
-                    content,
-                    postId,
-                    authorId: userId,
-                },
-            });
-            if(post.authorId !== userId)
-            {
-                await tx.notification.create({
-                    data:{
-                        type:"COMMENT",
-                        userId: post.authorId,
-                        creatorId: userId,
-                        postId,
-                        commentId: newComment.id,
-                    },
-                });
-            }
-            return [newComment]
-
-        });
-
-        revalidatePath("/")
-        return {success:true, comment }
-    }
-    catch (error) {
-        return {success:false, error:"failed to create comment" }
-    }
+export async function createComment(postId: string, content: string) 
+{ 
+    try { 
+        const userId = await getDBUserID(); 
+        if (!userId) return; 
+        if (!content) throw new Error("Comment cannot be empty"); 
+        const post = await prisma.post.findUnique({ 
+            where: { id: postId }, 
+            select: { authorId: true } 
+        }); 
+        if (!post) throw new Error("Post not found"); 
+        const [comment] = await prisma.$transaction( 
+            async (tx: Prisma.TransactionClient) => { 
+                const newComment = await tx.comment.create({ 
+                    data: { 
+                        content, 
+                        postId, 
+                        authorId: 
+                        userId, 
+                    }, 
+                }); 
+                if (post.authorId !== userId) { 
+                    await tx.notification.create({ 
+                        data: { 
+                            type: "COMMENT", 
+                            userId: post.authorId, 
+                            creatorId: userId, 
+                            postId, 
+                            commentId: newComment.id, 
+                        }, 
+                    }); 
+                } 
+                return [newComment]; 
+            } 
+        ); 
+        revalidatePath("/"); 
+        return { success: true, comment }; 
+    } 
+    catch (error) { 
+        return { success: false, error: "failed to create comment" }; 
+    } 
 }
 
 export async function deletePost(postId:string) {
