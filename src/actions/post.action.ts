@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { getDBUserID } from "./user.action";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { Prisma } from "@prisma/client";
 
 export async function createPost(content: string, image?: string) {
     try {
