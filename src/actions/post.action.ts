@@ -26,58 +26,90 @@ export async function createPost(content: string, image?: string) {
     }
 }
 
-export async function getPosts() {
-    try
-    {
-        const posts = prisma.post.findMany({
-            orderBy: {
-                createdAt:"desc"
-            },
-            include: {
-                author:{
-                    select:{
-                        name:true,
-                        image:true,
-                        username:true
-                    }
+export type FullPost = Prisma.PostGetPayload<{ 
+    include: { 
+        author: { 
+            select: { 
+                name: true; 
+                image: true; 
+                username: true; 
+            }; 
+        }; 
+        comments: { 
+            include: { 
+                author: { 
+                    select: { 
+                        name: true; 
+                        image: true; 
+                        username: true; 
+                    }; 
+                }; 
+            }; 
+            orderBy: { 
+                createdAt: "desc"; 
+            }; 
+        }; 
+        likes: { 
+            select: { 
+                userId: true; 
+            }; 
+        }; 
+        _count: { 
+            select: { 
+                likes: true; 
+                comments: true; 
+            }; 
+        }; 
+    }; 
+}>; 
+
+export async function getPosts(): Promise<FullPost[]> { 
+    try { 
+        const posts = await prisma.post.findMany({ 
+            orderBy: { 
+                createdAt: "desc", 
+            }, 
+            include: { 
+                author: { 
+                    select: { 
+                        name: true, 
+                        image: true, 
+                        username: true, 
+                    }, 
+                }, 
+                comments: { 
+                    include: { 
+                        author: { 
+                            select: {
+                                name: true, 
+                                image: true, 
+                                username: true, 
+                            }, 
+                        }, 
+                    }, 
+                    orderBy: { 
+                        createdAt: "desc", 
+                    }, 
+                }, 
+                likes: { 
+                    select: { 
+                        userId: true, 
+                    }, 
                 },
-                comments: {
-                    include:{
-                        author:{
-                            select:{
-                                name:true,
-                                image:true,
-                                username:true
-                            }
-                        }
-
-                    },
-                    orderBy:{
-                        createdAt:"desc"
-                    }
-                },
-                likes:{
-                    select:{
-                        userId:true
-                    }
-                },
-                _count:{
-                    select:{
-                        likes:true,
-                        comments:true
-                    }
-                }
-            }
-        })
-
-        return posts
-    }
-
-    catch(error)
-    {
-        throw new Error("Failed to get posts");
-
-    }
+                _count: { 
+                    select: { 
+                        likes: true, 
+                        comments: true, 
+                    }, 
+                }, 
+            }, 
+        }); 
+        
+        return posts; 
+    } 
+    catch (error) { 
+        throw new Error("Failed to get posts"); 
+    } 
 }
 
 export async function toggleLike(postId:string) {
